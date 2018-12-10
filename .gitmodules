@@ -1,0 +1,18 @@
+[submodule "3rd_party/intel-xed"]
+	path = 3rd_party/intel-xed
+	url = https://github.com/intelxed/xed.git
+[submodule "3rd_party/intel-mbuild"]
+	path = 3rd_party/mbuild
+	url = https://github.com/intelxed/mbuild.git
+[submodule "3rd_party/protobuf"]
+	path = 3rd_party/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
+[submodule "3rd_party/protobuf-c"]
+	path = 3rd_party/protobuf-c
+	url = https://github.com/protobuf-c/protobuf-c.git
+[submodule "3rd_party/safestringlib"]
+	path = 3rd_party/safestringlib
+	url = https://github.com/intel/safestringlib.git
+[submodule "3rd_party/libunwind"]
+	path = 3rd_party/libunwind
+	url = https://github.com/libunwind/libunwind.git

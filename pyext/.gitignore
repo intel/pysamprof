@@ -1,0 +1,8 @@
+build
+results
+cbuffer-master/cbuffer.o
+.cproject
+.project
+.settings
+.pydevproject
+

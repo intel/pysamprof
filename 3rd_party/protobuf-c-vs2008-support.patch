@@ -1,0 +1,254 @@
+diff --git a/build-cmake/CMakeLists.txt b/build-cmake/CMakeLists.txt
+index 1097a63..d115553 100644
+--- a/build-cmake/CMakeLists.txt
++++ b/build-cmake/CMakeLists.txt
+@@ -9,6 +9,7 @@ PROJECT(protobuf-c)
+ 
+ #options
+ option(MSVC_STATIC_BUILD "MSVC_STATIC_BUILD" OFF)
++option(ENABLE_DEBUG_TESTS "ENABLE_DEBUG_TESTS" ON)
+ option(BUILD_PROTO3 "BUILD_PROTO3" ON)
+ 
+ INCLUDE(TestBigEndian)
+@@ -80,7 +81,7 @@ FUNCTION(GENERATE_TEST_SOURCES PROTO_FILE SRC HDR)
+ ENDFUNCTION()
+ 
+ 
+-IF(CMAKE_BUILD_TYPE MATCHES Debug)
++IF(CMAKE_BUILD_TYPE MATCHES Debug AND ENABLE_DEBUG_TESTS)
+ ENABLE_TESTING()
+ 
+ GENERATE_TEST_SOURCES(${TEST_DIR}/test.proto t/test.pb-c.c t/test.pb-c.h)
+diff --git a/protobuf-c/protobuf-c.c b/protobuf-c/protobuf-c.c
+index 5d857e1..e51a420 100644
+--- a/protobuf-c/protobuf-c.c
++++ b/protobuf-c/protobuf-c.c
+@@ -175,12 +175,10 @@ do_free(ProtobufCAllocator *allocator, void *data)
+  * allocator used if NULL is passed as the ProtobufCAllocator to an exported
+  * function.
+  */
+-static ProtobufCAllocator protobuf_c__allocator = {
+-	.alloc = &system_alloc,
+-	.free = &system_free,
+-	.allocator_data = NULL,
+-};
+-
++ 
++static ProtobufCAllocator protobuf_c__allocator = \
++    ProtobufCAllocator_INIT(&system_alloc, &system_free, NULL);
++ 
+ /* === buffer-simple === */
+ 
+ void
+@@ -2634,11 +2632,12 @@ parse_oneof_member (ScannedMember *scanned_member,
+ 			int_range_lookup(message->descriptor->n_field_ranges,
+ 					 message->descriptor->field_ranges,
+ 					 *oneof_case);
+-		if (field_index < 0)
+-			return FALSE;
+ 		const ProtobufCFieldDescriptor *old_field =
+ 			message->descriptor->fields + field_index;
+-		size_t el_size = sizeof_elt_in_repeated_array(old_field->type);
++        size_t el_size;
++		if (field_index < 0)
++			return FALSE;
++		el_size = sizeof_elt_in_repeated_array(old_field->type);
+ 
+ 		switch (old_field->type) {
+ 	        case PROTOBUF_C_TYPE_STRING: {
+diff --git a/protobuf-c/protobuf-c.h b/protobuf-c/protobuf-c.h
+index 390bf42..935e24d 100755
+--- a/protobuf-c/protobuf-c.h
++++ b/protobuf-c/protobuf-c.h
+@@ -199,7 +199,39 @@ size_t foo__bar__baz_bah__pack_to_buffer
+ #include <assert.h>
+ #include <limits.h>
+ #include <stddef.h>
++
++#if defined(_MSC_VER) && _MSC_VER <= 1600
++// define used stuff from stdint manually
++typedef unsigned __int8 uint8_t;
++typedef __int8 int8_t;
++typedef unsigned __int16 uint16_t;
++typedef __int16 int16_t;
++typedef unsigned __int32 uint32_t;
++typedef __int32 int32_t;
++typedef unsigned __int64 uint64_t;
++typedef __int64 int64_t;
++
++#define INT8_MIN     ((int8_t)_I8_MIN)
++#define INT8_MAX     _I8_MAX
++#define INT16_MIN    ((int16_t)_I16_MIN)
++#define INT16_MAX    _I16_MAX
++#define INT32_MIN    ((int32_t)_I32_MIN)
++#define INT32_MAX    _I32_MAX
++#define INT64_MIN    ((int64_t)_I64_MIN)
++#define INT64_MAX    _I64_MAX
++#define UINT8_MAX    _UI8_MAX
++#define UINT16_MAX   _UI16_MAX
++#define UINT32_MAX   _UI32_MAX
++#define UINT64_MAX   _UI64_MAX
++#else
+ #include <stdint.h>
++#endif
++
++#ifndef _MSC_VER
++#define NAMED_STRUCT_FIELD(name, value) .name = value
++#else
++#define NAMED_STRUCT_FIELD(name, value) value
++#endif
+ 
+ #ifdef __cplusplus
+ # define PROTOBUF_C__BEGIN_DECLS	extern "C" {
+@@ -355,6 +387,13 @@ struct ProtobufCMethodDescriptor;
+ struct ProtobufCService;
+ struct ProtobufCServiceDescriptor;
+ 
++#define ProtobufCAllocator_INIT(alloc_val, free_val, allocator_data_val) \
++    {                                                           \
++        NAMED_STRUCT_FIELD(alloc, alloc_val),                   \
++        NAMED_STRUCT_FIELD(free, free_val),                     \
++        NAMED_STRUCT_FIELD(allocator_data, allocator_data_val), \
++    }
++
+ typedef struct ProtobufCAllocator ProtobufCAllocator;
+ typedef struct ProtobufCBinaryData ProtobufCBinaryData;
+ typedef struct ProtobufCBuffer ProtobufCBuffer;
+diff --git a/protoc-c/c_field.cc b/protoc-c/c_field.cc
+index eaa38d2..9fa56ef 100644
+--- a/protoc-c/c_field.cc
++++ b/protoc-c/c_field.cc
+@@ -189,7 +189,7 @@ void FieldGenerator::GenerateDescriptorInitializerGeneric(io::Printer* printer,
+ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
+   : descriptor_(descriptor),
+     field_generators_(
+-      new std::unique_ptr<FieldGenerator>[descriptor->field_count()]) {
++      new scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
+   // Construct all the FieldGenerators.
+   for (int i = 0; i < descriptor->field_count(); i++) {
+     field_generators_[i].reset(MakeGenerator(descriptor->field(i)));
+diff --git a/protoc-c/c_field.h b/protoc-c/c_field.h
+index 8a61634..dc5e279 100644
+--- a/protoc-c/c_field.h
++++ b/protoc-c/c_field.h
+@@ -118,7 +118,7 @@ class FieldGeneratorMap {
+ 
+  private:
+   const Descriptor* descriptor_;
+-  std::unique_ptr<std::unique_ptr<FieldGenerator>[]> field_generators_;
++  scoped_array<scoped_ptr<FieldGenerator> > field_generators_;
+ 
+   static FieldGenerator* MakeGenerator(const FieldDescriptor* field);
+ 
+diff --git a/protoc-c/c_file.cc b/protoc-c/c_file.cc
+index 90f18b4..0f1d770 100644
+--- a/protoc-c/c_file.cc
++++ b/protoc-c/c_file.cc
+@@ -83,13 +83,13 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
+                              const string& dllexport_decl)
+   : file_(file),
+     message_generators_(
+-      new std::unique_ptr<MessageGenerator>[file->message_type_count()]),
++      new scoped_ptr<MessageGenerator>[file->message_type_count()]),
+     enum_generators_(
+-      new std::unique_ptr<EnumGenerator>[file->enum_type_count()]),
++      new scoped_ptr<EnumGenerator>[file->enum_type_count()]),
+     service_generators_(
+-      new std::unique_ptr<ServiceGenerator>[file->service_count()]),
++      new scoped_ptr<ServiceGenerator>[file->service_count()]),
+     extension_generators_(
+-      new std::unique_ptr<ExtensionGenerator>[file->extension_count()]) {
++      new scoped_ptr<ExtensionGenerator>[file->extension_count()]) {
+ 
+   for (int i = 0; i < file->message_type_count(); i++) {
+     message_generators_[i].reset(
+diff --git a/protoc-c/c_file.h b/protoc-c/c_file.h
+index 1101794..bd2aaa4 100644
+--- a/protoc-c/c_file.h
++++ b/protoc-c/c_file.h
+@@ -99,10 +99,10 @@ class FileGenerator {
+  private:
+   const FileDescriptor* file_;
+ 
+-  std::unique_ptr<std::unique_ptr<MessageGenerator>[]> message_generators_;
+-  std::unique_ptr<std::unique_ptr<EnumGenerator>[]> enum_generators_;
+-  std::unique_ptr<std::unique_ptr<ServiceGenerator>[]> service_generators_;
+-  std::unique_ptr<std::unique_ptr<ExtensionGenerator>[]> extension_generators_;
++  scoped_array<scoped_ptr<MessageGenerator> > message_generators_;
++  scoped_array<scoped_ptr<EnumGenerator> > enum_generators_;
++  scoped_array<scoped_ptr<ServiceGenerator> > service_generators_;
++  scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
+ 
+   // E.g. if the package is foo.bar, package_parts_ is {"foo", "bar"}.
+   std::vector<string> package_parts_;
+diff --git a/protoc-c/c_generator.cc b/protoc-c/c_generator.cc
+index 46ad477..1f59a15 100644
+--- a/protoc-c/c_generator.cc
++++ b/protoc-c/c_generator.cc
+@@ -150,7 +150,7 @@ bool CGenerator::Generate(const FileDescriptor* file,
+ 
+   // Generate header.
+   {
+-    std::unique_ptr<io::ZeroCopyOutputStream> output(
++    scoped_ptr<io::ZeroCopyOutputStream> output(
+       output_directory->Open(basename + ".h"));
+     io::Printer printer(output.get(), '$');
+     file_generator.GenerateHeader(&printer);
+@@ -158,7 +158,7 @@ bool CGenerator::Generate(const FileDescriptor* file,
+ 
+   // Generate cc file.
+   {
+-    std::unique_ptr<io::ZeroCopyOutputStream> output(
++    scoped_ptr<io::ZeroCopyOutputStream> output(
+       output_directory->Open(basename + ".c"));
+     io::Printer printer(output.get(), '$');
+     file_generator.GenerateSource(&printer);
+diff --git a/protoc-c/c_helpers.cc b/protoc-c/c_helpers.cc
+index 90aeb53..cd46bcc 100644
+--- a/protoc-c/c_helpers.cc
++++ b/protoc-c/c_helpers.cc
+@@ -560,7 +560,7 @@ static int CEscapeInternal(const char* src, int src_len, char* dest,
+ }
+ string CEscape(const string& src) {
+   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
+-  std::unique_ptr<char[]> dest(new char[dest_length]);
++  scoped_array<char> dest(new char[dest_length]);
+   const int len = CEscapeInternal(src.data(), src.size(),
+                                   dest.get(), dest_length, false);
+   GOOGLE_DCHECK_GE(len, 0);
+diff --git a/protoc-c/c_message.cc b/protoc-c/c_message.cc
+index d9a6a33..daf7828 100755
+--- a/protoc-c/c_message.cc
++++ b/protoc-c/c_message.cc
+@@ -84,11 +84,11 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
+   : descriptor_(descriptor),
+     dllexport_decl_(dllexport_decl),
+     field_generators_(descriptor),
+-    nested_generators_(new std::unique_ptr<MessageGenerator>[
++    nested_generators_(new scoped_ptr<MessageGenerator>[
+       descriptor->nested_type_count()]),
+-    enum_generators_(new std::unique_ptr<EnumGenerator>[
++    enum_generators_(new scoped_ptr<EnumGenerator>[
+       descriptor->enum_type_count()]),
+-    extension_generators_(new std::unique_ptr<ExtensionGenerator>[
++    extension_generators_(new scoped_ptr<ExtensionGenerator>[
+       descriptor->extension_count()]) {
+ 
+   for (int i = 0; i < descriptor->nested_type_count(); i++) {
+diff --git a/protoc-c/c_message.h b/protoc-c/c_message.h
+index a30d78b..2d62c2d 100644
+--- a/protoc-c/c_message.h
++++ b/protoc-c/c_message.h
+@@ -127,9 +127,9 @@ class MessageGenerator {
+   const Descriptor* descriptor_;
+   string dllexport_decl_;
+   FieldGeneratorMap field_generators_;
+-  std::unique_ptr<std::unique_ptr<MessageGenerator>[]> nested_generators_;
+-  std::unique_ptr<std::unique_ptr<EnumGenerator>[]> enum_generators_;
+-  std::unique_ptr<std::unique_ptr<ExtensionGenerator>[]> extension_generators_;
++  scoped_array<scoped_ptr<MessageGenerator> > nested_generators_;
++  scoped_array<scoped_ptr<EnumGenerator> > enum_generators_;
++  scoped_array<scoped_ptr<ExtensionGenerator> > extension_generators_;
+ 
+   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
+ };

@@ -1,0 +1,58 @@
+// FunctionInfo is a format for function info storage.
+// Used for profile delayed symbolization to make collection faster.
+
+syntax = "proto3";
+
+// TODO: maybe think of better namespace.
+package perftools.symbols;
+
+message FunctionInfo { // Function information stored.
+    uint64 functionId = 1;
+    string functionName = 2;
+    CodeInfo codeInfo = 3; // Jited code information.
+    SourceFileInfo sourceFileInfo = 4; // Information about source file.
+    ModuleInfo moduleInfo = 5; //Information about module.
+    LineNumberMappings lineNumbermappings = 6; // Code and lines mappings.
+    Timing timing = 7; // Function load time and room for extending with
+                       // function unload time.
+}
+
+message CodeInfo { // Pieces of Jited code for method including machine code.
+    repeated CodeRegion codeRegions = 1; // Code regions.
+}
+
+message CodeRegion { // Code region info including Jited code.
+    uint64 startAddr = 1; // Start address of Jited code.
+    bytes buffer = 2; // Array of Jited code.
+}
+
+message SourceFileInfo { // Information about source file.
+    string sourceFileName = 1;
+}
+
+message ModuleInfo { //Information about module.
+    string moduleName = 1;
+}
+
+message LineNumberMappings { // Defined code and lines mappings.
+    repeated LineNumberMapEntry nativeToSourceMap = 1; // Mappings between native
+                                                  // code and source lines.
+}
+
+message LineNumberMapEntry {
+    uint32 startOffset = 1;
+    uint32 endOffset = 2;
+    uint32 lineNumber = 3;
+}
+
+message Timing {
+    int64 loadTime = 1;
+}
+
+message Mapping {
+  uint64 Start = 1;
+  uint64 Limit = 2;
+  uint64 Offset = 3;
+  string File = 4;
+  int64 loadTime = 5;
+}

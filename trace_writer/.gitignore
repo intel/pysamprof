@@ -1,0 +1,7 @@
+build
+nanomsgkit
+src/.vscode
+.cproject
+.project
+.settings/
+

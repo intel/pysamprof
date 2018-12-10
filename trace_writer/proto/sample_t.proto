@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package perftools.samples;
+
+// the Protocol Buffer wire format is not self-delimiting, so protocol buffer parsers cannot determine where a message ends on their own.
+
+message sample_t {
+    uint64 stack_size = 3;
+    enum stack_type_t {
+        native = 0;
+        python = 1;
+        mixed = 2;
+    }
+    stack_type_t stack_type = 4;
+    int64 duration = 5;
+    int64 timestamp = 6;
+    int64 tid = 7;
+    repeated uint64 locations = 8;
+}
