@@ -1,7 +1,6 @@
 #ifndef __PYSAMPROF_FUNCTION_INFO_H__
 #define __PYSAMPROF_FUNCTION_INFO_H__
 
-#define _BSD_SOURCE
 #include <string.h>
 
 #include "../../common/logging/logging.h"

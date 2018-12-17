@@ -33,10 +33,10 @@ index 5d857e1..e51a420 100644
 -	.allocator_data = NULL,
 -};
 -
-+ 
++
 +static ProtobufCAllocator protobuf_c__allocator = \
 +    ProtobufCAllocator_INIT(&system_alloc, &system_free, NULL);
-+ 
++
  /* === buffer-simple === */
  
  void
@@ -57,7 +57,7 @@ index 5d857e1..e51a420 100644
  		switch (old_field->type) {
  	        case PROTOBUF_C_TYPE_STRING: {
 diff --git a/protobuf-c/protobuf-c.h b/protobuf-c/protobuf-c.h
-index 390bf42..935e24d 100755
+index 390bf42..935e24d 100644
 --- a/protobuf-c/protobuf-c.h
 +++ b/protobuf-c/protobuf-c.h
 @@ -199,7 +199,39 @@ size_t foo__bar__baz_bah__pack_to_buffer
@@ -217,7 +217,7 @@ index 90aeb53..cd46bcc 100644
                                    dest.get(), dest_length, false);
    GOOGLE_DCHECK_GE(len, 0);
 diff --git a/protoc-c/c_message.cc b/protoc-c/c_message.cc
-index d9a6a33..daf7828 100755
+index d9a6a33..daf7828 100644
 --- a/protoc-c/c_message.cc
 +++ b/protoc-c/c_message.cc
 @@ -84,11 +84,11 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,

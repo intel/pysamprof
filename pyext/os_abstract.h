@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/syscall.h>   /* For SYS_gettid definition */
+#include <signal.h>
 
 typedef pthread_t thread_t;
 typedef pthread_mutex_t mutex_t;

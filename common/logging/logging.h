@@ -18,9 +18,9 @@ extern pysamprof_loglevel_t g_pysamprof_loglevel;
 
 #define PYSAMPROF_LOG(level, fmt, ...)                                      \
     do {                                                                    \
-        if (g_pysamprof_logfile != NULL && level <= g_pysamprof_loglevel)   \
+        if (g_pysamprof_logfile != NULL && (level) <= g_pysamprof_loglevel)   \
         {                                                                   \
-            pysamprof_log(g_pysamprof_logfile, level, fmt, ##__VA_ARGS__);  \
+            pysamprof_log(g_pysamprof_logfile, (level), (fmt), ##__VA_ARGS__);  \
         }                                                                   \
     } while(0)
 
