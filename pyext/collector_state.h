@@ -1,7 +1,7 @@
 #ifndef __PYSAMPROF_COLLECTOR_STATE_H__
 #define __PYSAMPROF_COLLECTOR_STATE_H__
 
-#include <common/status/status.h>
+#include <status/status.h>
 
 #include "../trace_writer/include/trace_writer_api.h"
 
@@ -33,3 +33,4 @@ operation_result_t set_collector_handles(thread_handle_t* myself,
 		master_handle_t* master);
 
 #endif
+

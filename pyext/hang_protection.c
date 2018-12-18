@@ -1,6 +1,6 @@
 #include "hang_protection.h"
 
-#include <common/logging/logging.h>
+#include <logging/logging.h>
 #include <probengine/prober.h>
 
 #include "workspace.h"
@@ -79,3 +79,4 @@ operation_result_t init_hang_protection(all_memory_regions_t regions)
 #endif
 	return res;
 }
+

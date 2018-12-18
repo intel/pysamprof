@@ -17,7 +17,7 @@
 #include "include/probengine/prober.h"
 #include "include/probengine/image_data.h"
 #include "include/probengine/trampoline_mgr.h"
-#include <common/logging/logging.h>
+#include <logging/logging.h>
 
 #define GET_ABS_DIFF(x, y) (((x) >= (y)) ? ((x) - (y)) : ((y) - (x)))
 #define GET_SIZE_DIFF(x, y) GET_ABS_DIFF((size_t)(x), (size_t)(y))

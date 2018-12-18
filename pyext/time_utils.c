@@ -1,5 +1,5 @@
 #include "time_utils.h"
-#include "../common/logging/logging.h"
+#include <logging/logging.h>
 
 #ifdef __linux__
 #include <time.h>
@@ -121,3 +121,4 @@ operation_result_t get_cpu_time(HANDLE thread, timeunit_t* result)
 }
 
 #endif
+

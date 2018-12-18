@@ -1,7 +1,7 @@
 #ifndef __PYSAMPROF_TRAMPOLINE_MGR_H__
 #define __PYSAMPROF_TRAMPOLINE_MGR_H__
 
-#include <common/status/status.h>
+#include <status/status.h>
 #include "memory_regions.h"
 
 #define TRAMPOLINE_ENTRY_SIZE 64

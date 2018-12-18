@@ -9,8 +9,8 @@
 #include <errno.h>
 
 #include <probengine/prober.h>
-#include <common/logging/logging.h>
-#include <common/utilities/utilities.h>
+#include <logging/logging.h>
+#include <utilities/utilities.h>
 
 #ifdef __linux__
 #include <pthread.h>

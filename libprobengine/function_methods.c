@@ -1,6 +1,6 @@
 #include "include/probengine/function_methods.h"
 
-#include <common/logging/logging.h>
+#include <logging/logging.h>
 #include <xed/xed-interface.h>
 
 operation_result_t get_real_function_start(void* addr, size_t* result)

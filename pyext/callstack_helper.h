@@ -4,7 +4,7 @@
 #include <Python.h>
 #include <frameobject.h>
 
-#include <common/status/status.h>
+#include <status/status.h>
 #include <probengine/memory_regions.h>
 
 PyObject* PyEval_EvalFrameEx_probe(PyFrameObject* f, int throwflag);

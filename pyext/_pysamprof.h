@@ -5,7 +5,7 @@
 #include "session.h"
 #include "os_abstract.h"
 
-#include <common/utilities/inttype_helper.h>
+#include <utilities/inttype_helper.h>
 
 operation_result_t pysamprof_stop_collection(int has_gil, collection_state_t next_state);
 operation_result_t pysamprof_enable_collection(collection_state_t state, const char* path, int period_msec, int signo, int64_t forked_parent_pid);
@@ -32,3 +32,4 @@ PYSAMPROF_API_FUNC(int) pysamprof_api_resume_collection(long long target_pid);
 PYSAMPROF_API_FUNC(int) pysamprof_api_stop_collection(long long target_pid);
 
 #endif
+

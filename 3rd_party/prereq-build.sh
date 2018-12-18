@@ -31,7 +31,7 @@ echo "Building protobuf"
 echo "Building protobuf-c"
     cd "$SOURCE/protobuf-c"
     ./autogen.sh
-    PKG_CONFIG_PATH="$TARGET/protobufkit/lib/pkgconfig/" CFLAGS="`${PYTHON_CONFIG} --cflags` -fPIC" LDFLAGS="`${PYTHON_CONFIG} --ldflags`" ./configure "--prefix=$TARGET/protobuf-ckit" --enable-shared=no
+    PKG_CONFIG_PATH="$TARGET/protobufkit/lib/pkgconfig/" CFLAGS="`${PYTHON_CONFIG} --cflags` -fPIC" LDFLAGS="`${PYTHON_CONFIG} --ldflags`" ./configure "--prefix=$TARGET/protobufc-kit" --enable-shared=no
     make
     make install
     echo "Building protobuf-c succeeded"

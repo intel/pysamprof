@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <time.h>
 
-#include "../common/status/status.h"
+#include <status/status.h>
 #include "workspace.h"
 
 #define MINIMUM_ALTSTACK (128 * 1024)

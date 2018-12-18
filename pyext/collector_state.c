@@ -13,7 +13,7 @@
 #include "../trace_writer/include/client_handles.h"
 #include "../trace_writer/include/ipc_message.h"
 
-#include <common/utilities/utilities.h>
+#include <utilities/utilities.h>
 
 struct collector_state_t
 {

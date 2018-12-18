@@ -3,7 +3,7 @@
 
 #include <Python.h>
 
-#include <common/status/status.h>
+#include <status/status.h>
 
 #include "os_abstract.h"
 #include "ringbuffer.h"

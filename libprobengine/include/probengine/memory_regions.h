@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#include <common/status/status.h>
+#include <status/status.h>
 
 #define PERMISSIONS_NONE    0
 #define PERMISSIONS_READ    1

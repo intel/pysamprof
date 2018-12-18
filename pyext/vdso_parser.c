@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../common/logging/logging.h"
+#include <logging/logging.h>
 
 static const char s_vdso_name[] = "[vdso]";
 

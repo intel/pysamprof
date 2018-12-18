@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include <common/status/status.h>
+#include <status/status.h>
 #include "workspace.h"
 
 typedef operation_result_t (*sampling_func_t)(workspace_t* wsp, CONTEXT* ctx);
@@ -16,3 +16,4 @@ operation_result_t setup_wsp_thread(workspace_t* wsp, int sampling_rate_msec, sa
 operation_result_t free_wsp_thread(workspace_t* wsp);
 
 #endif
+

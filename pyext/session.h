@@ -1,7 +1,7 @@
 #ifndef __PYSAMPROF_SESSION_H__
 #define __PYSAMPROF_SESSION_H__
 
-#include <common/status/status.h>
+#include <status/status.h>
 #include <probengine/memory_regions.h>
 
 #include <ipc-ng/ipc-ng.h>

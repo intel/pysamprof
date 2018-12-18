@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 
-#include <common/utilities/inttype_helper.h>
-#include <common/status/status.h>
+#include <utilities/inttype_helper.h>
+#include <status/status.h>
 
 #include "memory_regions.h"
 

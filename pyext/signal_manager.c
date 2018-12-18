@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include "../common/logging/logging.h"
+#include <logging/logging.h>
 #include "collector_state.h"
 
 operation_result_t allocate_wsp_altstack(workspace_t* wsp, size_t minimum_size)

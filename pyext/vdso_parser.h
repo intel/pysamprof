@@ -5,7 +5,7 @@
 #error vDSO parsing is Linux specific
 #endif
 
-#include "../common/status/status.h"
+#include <status/status.h>
 #include <probengine/memory_regions.h>
 
 typedef struct

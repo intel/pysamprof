@@ -16,8 +16,8 @@ typedef DWORD wsp_tid_t;
 #error Unsupported platform
 #endif
 
-#include <common/status/status.h>
-#include <common/utilities/inttype_helper.h>
+#include <status/status.h>
+#include <utilities/inttype_helper.h>
 
 #include "time_utils.h"
 #include "os_abstract.h"

@@ -1,8 +1,8 @@
 #ifndef __PYSAMPROF_OS_ABSTRACT_H__
 #define __PYSAMPROF_OS_ABSTRACT_H__
 
-#include <common/status/status.h>
-#include <common/logging/logging.h>
+#include <status/status.h>
+#include <logging/logging.h>
 
 #ifdef __linux__
 #include <pthread.h>

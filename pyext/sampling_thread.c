@@ -2,7 +2,7 @@
 #include "time_utils.h"
 #include "threading_follow.h"
 
-#include <common/logging/logging.h>
+#include <logging/logging.h>
 
 typedef struct
 {

@@ -4,8 +4,8 @@
 // Inspired by https://github.com/AndersKaloer/Ring-Buffer
 // original is MIT-licensed.
 
-#include <common/utilities/inttype_helper.h>
-#include <common/status/status.h>
+#include <utilities/inttype_helper.h>
+#include <status/status.h>
 
 /* The size of a ring buffer. Only RING_BUFFER_SIZE-1 items
    can be contained in the buffer. Must be a power of two.

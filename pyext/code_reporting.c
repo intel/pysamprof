@@ -10,7 +10,7 @@
 #error Unsupported platform
 #endif
 
-#include <common/utilities/utilities.h>
+#include <utilities/utilities.h>
 
 #include "../trace_writer/include/trace_writer_api.h"
 

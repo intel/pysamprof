@@ -1,8 +1,8 @@
 #ifndef __PYSAMPROF_TIME_UTILS_H__
 #define __PYSAMPROF_TIME_UTILS_H__
 
-#include <common/utilities/inttype_helper.h>
-#include <common/status/status.h>
+#include <utilities/inttype_helper.h>
+#include <status/status.h>
 
 #ifdef __linux__
 #include <time.h>

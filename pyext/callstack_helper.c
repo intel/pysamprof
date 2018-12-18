@@ -1,6 +1,6 @@
 #include "callstack_helper.h"
 
-#include <common/logging/logging.h>
+#include <logging/logging.h>
 #include <probengine/prober.h>
 #include <probengine/function_methods.h>
 

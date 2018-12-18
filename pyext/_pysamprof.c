@@ -47,8 +47,8 @@ typedef CONTEXT* context_ptr_t;
 #include <probengine/prober.h>
 #include <ipc-ng/ipc-ng.h>
 
-#include <common/logging/logging.h>
-#include <common/utilities/utilities.h>
+#include <logging/logging.h>
+#include <utilities/utilities.h>
 
 #include "threading_follow.h"
 #include "workspace.h"

@@ -4,7 +4,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "../common/logging/logging.h"
+#include <logging/logging.h>
 
 #ifdef __linux__
 #include <pthread.h>
