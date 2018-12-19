@@ -10,7 +10,7 @@ popd
 
 :xed
 pushd .\intel-xed
-python mfile.py --msvs-version=9 --install-dir="%TARGET_DIR%\xedkit" install && echo "XED built successfully"
+python mfile.py --msvs-version=%1 --install-dir="%TARGET_DIR%\xedkit" install && echo "XED built successfully"
 popd
 
 :protobuf
