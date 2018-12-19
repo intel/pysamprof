@@ -1467,7 +1467,11 @@ void atexit_mark_sampling_unsafe(void)
     mark_thread_sampling_unsafe();
 }
 
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_pysamprof(void)
+#else
 PyMODINIT_FUNC initpysamprof(void)
+#endif
 {
     operation_result_t res = or_okay;
     // TODO: call finalize_logging() somewhere
