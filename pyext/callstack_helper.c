@@ -6,22 +6,30 @@
 #include <probengine/prober.h>
 #include <probengine/function_methods.h>
 
+#ifdef _MSC_VER
+#include <Windows.h>
+#endif
+
 size_t g_PyEval_EvalFrameEx_probe_start = 0;
 
 typedef PyObject* (*pyeval_t)(PyFrameObject* f, int throwflag);
 static pyeval_t s_original_pyeval = NULL;
 
-#ifdef _MSVC
-#pragma optimize("", off)
-#endif
 PyObject* PyEval_EvalFrameEx_probe(PyFrameObject* f, int throwflag)
 {
-    if (s_original_pyeval != NULL) return s_original_pyeval(f, throwflag);
+	if (s_original_pyeval != NULL)
+	{
+		PyObject* result = s_original_pyeval(f, throwflag);
+#ifdef _MSC_VER
+		// This is to trick compiler to disable tail call optimization,
+		// to make sure PyEval_EvalFrameEx_probe is present on callstack.
+		// In GCC, we have "-fno-optimize-sibling-calls" for that. Unfortunately MSVC has no such switch :(
+		MemoryBarrier();
+#endif
+		return result;
+	}
     return NULL;
 }
-#ifdef _MSVC
-#pragma optimize("", on)
-#endif
 
 operation_result_t init_callstack_helper(const all_memory_regions_t regions)
 {

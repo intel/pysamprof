@@ -5,22 +5,29 @@ import sys
 import tempfile
 
 if sys.platform == 'win32':
-    DUMPBIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dumpbin-vs2008.cmd')
-    def get_section_size(objPath):
+    def _call_dumpbin(objPath, *args):
         handle, tempPath = tempfile.mkstemp('.dump-out')
         os.close(handle)
-
         try:
-            proc = subprocess.Popen([DUMPBIN, '/section:.text', '/out:%s' % tempPath, objPath],
+            proc = subprocess.Popen(['dumpbin'] + list(args) +['/out:%s' % tempPath, objPath],
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             out, _ = proc.communicate()
             if proc.returncode != 0:
                 sys.exit('dumpbin errored out:\n%s' % out)
             with open(tempPath) as inp:
-                out = inp.read()
+                return inp.read()
         finally:
             os.remove(tempPath)
 
+    def get_section_size(objPath):
+        # first find exact .text section name - they differ for different versions of MSVC
+        summary = _call_dumpbin(objPath, '/summary')
+        try:
+            section_name = re.search(r'\s+(\.text[^\s]+)\s*$', summary, re.MULTILINE).group(1)
+        except AttributeError:
+            sys.exit('Cannot find full ".text" section name')
+            
+        out = _call_dumpbin(objPath, '/section:%s' % section_name.strip())
         found = re.findall(r'^\s*([0-9a-fA-F]+)\s*size of raw data\s*$', out, re.MULTILINE)
 
         try:

@@ -29,6 +29,12 @@
 #error Unsupported platform
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+#define GET_PYSTR_AS_PCHAR(pystr) PyUnicode_AsUTF8(pystr)
+#else
+#define GET_PYSTR_AS_PCHAR(pystr) PyString_AsString(pystr)
+#endif
+
 
 static volatile uint64_t s_function_id = 1;
 operation_result_t make_function_info(Perftools__Symbols__FunctionInfo** info)
@@ -234,11 +240,7 @@ static void report_code_object(ring_buffer_element_t element)
 
     if (code->co_filename != NULL)
     {
-#if PY_MAJOR_VERSION >= 3
-        const char* filename = PyUnicode_AsUTF8(code->co_filename);
-#else
-        const char* filename = PyString_AsString(code->co_filename);
-#endif
+        const char* filename = GET_PYSTR_AS_PCHAR(code->co_filename);
         if (filename != NULL)
         {
             res = add_source_file_name_function_info(info, filename);
@@ -364,12 +366,8 @@ static DWORD WINAPI symbol_gather_routine(void* data)
             FULL_MEMORY_BARRIER();
             if (state->state == crts_stop_requested) break;
 
-            PYSAMPROF_LOG(PL_INFO, "Got code object %p: '%s'", code,
-#if PY_MAJOR_VERSION >= 3
-                    PyUnicode_AsUTF8(code->co_name));
-#else
-                    PyString_AsString(code->co_name));
-#endif
+			PYSAMPROF_LOG(PL_INFO, "Got code object %p: '%s'", code,
+					GET_PYSTR_AS_PCHAR(code->co_name));
             report_code_object(element);
 
             Py_DECREF((PyObject* )(element.data));
