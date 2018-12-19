@@ -115,7 +115,7 @@ target_compile_definitions(${TARGET_NAME} PRIVATE "PYSAMPROF_BUILDING_LIB=1")
 
 if (UNIX)
     target_compile_definitions(${TARGET_NAME} PRIVATE "_GNU_SOURCE")
-    target_compile_options(${TARGET_NAME} PUBLIC "-Wall")
+    target_compile_options(${TARGET_NAME} PUBLIC "-Wall" "-Wno-multichar" "-Wno-unused-function")
     set_property(TARGET ${TARGET_NAME} PROPERTY C_STANDARD 99)
 elseif(WIN32)
     #foo
