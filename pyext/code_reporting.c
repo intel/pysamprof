@@ -219,7 +219,11 @@ static void report_code_object(ring_buffer_element_t element)
 
     if (code->co_code != NULL)
     {
+#if PY_MAJOR_VERSION >= 3
+        Py_ssize_t size = PyBytes_Size(code->co_code);
+#else
         Py_ssize_t size = PyString_Size(code->co_code);
+#endif
         if (size >= 0 && size <= ((uint32_t)-1))
         {
             res = add_code_region_function_info(info, (uint64_t)(code->co_code),
@@ -230,7 +234,11 @@ static void report_code_object(ring_buffer_element_t element)
 
     if (code->co_filename != NULL)
     {
-        char* filename = PyString_AsString(code->co_filename);
+#if PY_MAJOR_VERSION >= 3
+        const char* filename = PyUnicode_AsUTF8(code->co_filename);
+#else
+        const char* filename = PyString_AsString(code->co_filename);
+#endif
         if (filename != NULL)
         {
             res = add_source_file_name_function_info(info, filename);
@@ -243,7 +251,11 @@ static void report_code_object(ring_buffer_element_t element)
 
     if (code->co_name != NULL)
     {
-        char* name = PyString_AsString(code->co_name);
+#if PY_MAJOR_VERSION >= 3
+        const char* name = PyUnicode_AsUTF8(code->co_name);
+#else
+        const char* name = PyString_AsString(code->co_name);
+#endif
         if (name != NULL)
         {
             res = add_function_name_function_info(info, name);
@@ -353,7 +365,11 @@ static DWORD WINAPI symbol_gather_routine(void* data)
             if (state->state == crts_stop_requested) break;
 
             PYSAMPROF_LOG(PL_INFO, "Got code object %p: '%s'", code,
+#if PY_MAJOR_VERSION >= 3
+                    PyUnicode_AsUTF8(code->co_name));
+#else
                     PyString_AsString(code->co_name));
+#endif
             report_code_object(element);
 
             Py_DECREF((PyObject* )(element.data));
