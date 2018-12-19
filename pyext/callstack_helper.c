@@ -8,14 +8,21 @@ size_t g_PyEval_EvalFrameEx_probe_start = 0;
 
 typedef PyObject* (*pyeval_t)(PyFrameObject* f, int throwflag);
 static pyeval_t s_original_pyeval = NULL;
+
+#ifdef _MSVC
+#pragma optimize("", off)
+#endif
 PyObject* PyEval_EvalFrameEx_probe(PyFrameObject* f, int throwflag)
 {
     if (s_original_pyeval != NULL) return s_original_pyeval(f, throwflag);
     return NULL;
 }
+#ifdef _MSVC
+#pragma optimize("", on)
+#endif
 
 operation_result_t init_callstack_helper(const all_memory_regions_t regions)
-{   
+{
 	operation_result_t res = get_real_function_start(PyEval_EvalFrameEx_probe,
 		&g_PyEval_EvalFrameEx_probe_start);
 	if (res != or_okay)
