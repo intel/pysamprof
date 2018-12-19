@@ -11,11 +11,13 @@ typedef __int64 int64_t;
 typedef unsigned __int32 uint32_t;
 typedef unsigned __int16 uint16_t;
 
-#ifndef PRIu64
+#if _MSC_VER < 1800
 #define PRIu64 "I64u"
 #define PRId64 "I64d"
 #define PRIu32 "u"
 #define PRId32 "d"
+#else
+#include <inttypes.h>
 #endif
 
 #else
