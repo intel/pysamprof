@@ -1,5 +1,7 @@
 #include "callstack_helper.h"
 
+#include <patchlevel.h>
+
 #include <logging/logging.h>
 #include <probengine/prober.h>
 #include <probengine/function_methods.h>
@@ -33,7 +35,12 @@ operation_result_t init_callstack_helper(const all_memory_regions_t regions)
 
     if (s_original_pyeval == NULL)
     {
-        res = probe_function(PyEval_EvalFrameEx,
+        res = probe_function(
+#if PY_VERSION_HEX < 0x03060000
+                PyEval_EvalFrameEx,
+#else
+                _PyEval_EvalFrameDefault,
+#endif
                 (void*)PyEval_EvalFrameEx_probe,
                 regions, (void**)&s_original_pyeval);
         if (res != or_okay) return res;
