@@ -412,9 +412,9 @@ operation_result_t collect_one_sample(workspace_t* wsp, context_ptr_t ctx, timeu
 
     sample_msg->head.size = sizeof(ipc_message_sample_t)
             + sizeof(uint64_t) * sample_msg->body.stack_size;
-    if (sample_msg->body.stack_size < 3)
+    if (sample_msg->body.stack_size < 4)
     {
-        PYSAMPROF_LOG(PL_WARNING, "Callstack for tid %ld has depth=%d which is lower than 3, "
+        PYSAMPROF_LOG(PL_WARNING, "Callstack for tid %ld has depth=%d which is lower than 4, "
                 "discarding it as invalid", wsp->tid, (int)(sample_msg->body.stack_size));
         DISCARD_SAMPLE_MESSAGE;
         return or_okay;
