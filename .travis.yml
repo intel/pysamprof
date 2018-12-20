@@ -13,7 +13,7 @@ sudo:
 before_install:
   - sudo apt-get update -y && sudo apt-get upgrade -y
   - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake python-pip
-  - sudo pip install -y setuptools
+  - sudo pip install setuptools
 
 
 before_script:
