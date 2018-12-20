@@ -128,7 +128,7 @@ operation_result_t send_function_info(thread_handle_t* myself,
 #define GET_CODE_REPORTING(code_reporting, res, retval) \
 {                                                       \
     res = get_code_reporting(&code_reporting);          \
-    CHECK_AND_REPORT_ERROR(res, "Cannot get code reporting from collector", retval);	\
+    CHECK_AND_REPORT_ERROR(res, "Cannot get code reporting from collector", retval); \
 }
 
 static operation_result_t add_code_object_to_reported(PyCodeObject* code)
@@ -366,8 +366,8 @@ static DWORD WINAPI symbol_gather_routine(void* data)
             FULL_MEMORY_BARRIER();
             if (state->state == crts_stop_requested) break;
 
-			PYSAMPROF_LOG(PL_INFO, "Got code object %p: '%s'", code,
-					GET_PYSTR_AS_PCHAR(code->co_name));
+            PYSAMPROF_LOG(PL_INFO, "Got code object %p: '%s'", code,
+                    GET_PYSTR_AS_PCHAR(code->co_name));
             report_code_object(element);
 
             Py_DECREF((PyObject* )(element.data));

@@ -157,6 +157,7 @@ operation_result_t collect_one_sample(workspace_t* wsp, context_ptr_t ctx, timeu
                          that destroy states to ensure we clean up this field. */
                         wsp->tstate = tstate;
                         wsp->python_enabled = pes_is_python;
+                        break;
                     }
                 }
             }
@@ -1616,7 +1617,7 @@ PyMODINIT_FUNC initpysamprof(void)
 #else
         PyObject* m = Py_InitModule3("pysamprof", module_methods, module_docstring);
 #endif
-        if (m == NULL) INIT_ERROR;
+        if (m == NULL) return INIT_ERROR;
         PyEval_InitThreads();
         PYSAMPROF_LOG(PL_INFO, "pysamprof initialized");
 #if PY_MAJOR_VERSION >= 3
