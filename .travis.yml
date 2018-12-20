@@ -1,0 +1,28 @@
+os:
+  - linux
+
+
+dist:
+  - xenial
+
+
+sudo:
+  - required
+
+
+before_install:
+  - sudo apt-get update -y && sudo apt-get upgrade -y
+  - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake python-pip
+  - sudo pip install -y setuptools
+
+
+before_script:
+  - cd 3rd_party && ./prereq-build.sh && cd ..
+  - mkdir pyext/build && cd pyext/build
+  - cmake -DCMAKE_BUILD_TYPE=Release ..
+  - make
+
+
+script:
+  - mkdir ~/result && cp pysamprof.so ~/result/ && cp trace_writer/pysamprof-server ~/result/
+
