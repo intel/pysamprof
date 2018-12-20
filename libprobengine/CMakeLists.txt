@@ -22,7 +22,7 @@ target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/inc
 
 if (UNIX)
     target_compile_definitions(${TARGET_NAME} PRIVATE "_GNU_SOURCE")
-    target_compile_options(${TARGET_NAME} PUBLIC "-Wall")
+    target_compile_options(${TARGET_NAME} PUBLIC "-Wall" "-Wno-multichar")
     set_property(TARGET ${TARGET_NAME} PROPERTY C_STANDARD 99)
 elseif(WIN32)
     #foo

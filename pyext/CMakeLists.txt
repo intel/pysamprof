@@ -40,6 +40,9 @@ set(CALLSTACK_HELPER_GEN ${CMAKE_CURRENT_BINARY_DIR}/callstack_helper_gen.h)
 
 add_library(${CALLSTACK_HELPER} ${CALLSTACK_SRC})
 target_include_directories(${CALLSTACK_HELPER} PRIVATE ${PYTHON_INCLUDE_DIR})
+if (UNIX)
+    target_compile_options(${CALLSTACK_HELPER} PUBLIC "-Wall" "-fno-optimize-sibling-calls")
+endif()
 
 add_dependencies(${CALLSTACK_HELPER} pysamprof-common)
 target_link_libraries(${CALLSTACK_HELPER} PUBLIC pysamprof-common)
@@ -115,7 +118,7 @@ target_compile_definitions(${TARGET_NAME} PRIVATE "PYSAMPROF_BUILDING_LIB=1")
 
 if (UNIX)
     target_compile_definitions(${TARGET_NAME} PRIVATE "_GNU_SOURCE")
-    target_compile_options(${TARGET_NAME} PUBLIC "-Wall")
+    target_compile_options(${TARGET_NAME} PUBLIC "-Wall" "-Wno-multichar" "-Wno-unused-function")
     set_property(TARGET ${TARGET_NAME} PROPERTY C_STANDARD 99)
 elseif(WIN32)
     #foo

@@ -27,42 +27,46 @@ operation_result_t allocate_wsp_altstack(workspace_t* wsp, size_t minimum_size)
         return or_fail;
     }
     // TODO: change to mmap/munmap and protect pages for better safety
-    if (ss.ss_flags & SS_DISABLE)
+    if (!(ss.ss_flags & SS_DISABLE))
     {
-        // no alt. stack used
-        ss.ss_sp = malloc(minimum_size);
-        if (ss.ss_sp == NULL)
+        if (ss.ss_size >= minimum_size)
         {
-            PYSAMPROF_LOG(PL_ERROR, "Not enough memory: cannot allocate %lld-sized altstack",
-                    (long long )minimum_size);
-            return or_insufficient_memory;
+            wsp->altstack_size = ss.ss_size;
+            return or_okay;
         }
-        ss.ss_size = minimum_size;
-        ss.ss_flags = 0;
-        if (sigaltstack(&ss, NULL) != 0)
+        else if (syscall(SYS_gettid) != getpid())
         {
-            PYSAMPROF_LOG(PL_ERROR, "Cannot set new altstack for %lld thread, errno: %d",
-                    (long long )wsp->tid, errno);
-            return or_fail;
-        }
-        wsp->altstack = ss.ss_sp;
-        wsp->altstack_size = minimum_size;
-        return or_okay;
-    }
-    else
-    {
-        // TODO: we can override alt. stack for main thread if
-        //       this is Python executable - it's analyzed to be safe
-        if (ss.ss_size < minimum_size)
-        {
+            // this is not a first thread, we cannot be sure it is safe to override
             PYSAMPROF_LOG(PL_ERROR, "Altstack for %lld thread already set but "
                     "it is too small: it has %lld size while minimum is %lld",
                     (long long )wsp->tid, (long long )ss.ss_size, (long long )minimum_size);
             return or_small_altstack;
         }
-        wsp->altstack_size = ss.ss_size;
-        return or_okay;
+        else
+        {
+            PYSAMPROF_LOG(PL_INFO, "Found that main thread has too small altstack, overriding");
+        }
     }
+
+    // no alt. stack used or it is too small and we deemed safe to override it
+    ss.ss_sp = malloc(minimum_size);
+    if (ss.ss_sp == NULL)
+    {
+        PYSAMPROF_LOG(PL_ERROR, "Not enough memory: cannot allocate %lld-sized altstack",
+                (long long )minimum_size);
+        return or_insufficient_memory;
+    }
+    ss.ss_size = minimum_size;
+    ss.ss_flags = 0;
+    if (sigaltstack(&ss, NULL) != 0)
+    {
+        PYSAMPROF_LOG(PL_ERROR, "Cannot set new altstack for %lld thread, errno: %d",
+                (long long )wsp->tid, errno);
+        return or_fail;
+    }
+    wsp->altstack = ss.ss_sp;
+    wsp->altstack_size = minimum_size;
+    return or_okay;
 }
 
 operation_result_t free_wsp_altstack(workspace_t* wsp, int current_thread)

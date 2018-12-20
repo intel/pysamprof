@@ -2,6 +2,22 @@
 #ifndef WITH_THREAD
 #error Python without threading not supported for profiling so far
 #endif
+#include <patchlevel.h>
+
+#if PY_VERSION_HEX < 0x03000000
+// Python 2.x
+#define GET_CURRENT_PYSTATE (_PyThreadState_Current)
+#elif PY_VERSION_HEX < 0x03060000
+// Python 3.0 - 3.5
+#define Py_BUILD_CORE
+#include <pystate.h>
+#undef Py_BUILD_CORE
+#define GET_CURRENT_PYSTATE (PyThreadState_GET())
+#else
+// Python 3.6 or newer
+#include <pystate.h>
+#define GET_CURRENT_PYSTATE (_PyThreadState_UncheckedGet())
+#endif
 
 #ifndef PYSAMPROF_BUILDING_LIB
 #error PYSAMPROF_BUILDING_LIB must be defined
@@ -141,6 +157,7 @@ operation_result_t collect_one_sample(workspace_t* wsp, context_ptr_t ctx, timeu
                          that destroy states to ensure we clean up this field. */
                         wsp->tstate = tstate;
                         wsp->python_enabled = pes_is_python;
+                        break;
                     }
                 }
             }
@@ -152,6 +169,12 @@ operation_result_t collect_one_sample(workspace_t* wsp, context_ptr_t ctx, timeu
         free_wsp_timer(wsp);
 #endif
         return or_stop_sampling_service;
+    case pes_native: // fallthrough
+    case pes_is_python:
+        break;
+    default:
+        PYSAMPROF_LOG(PL_ERROR, "Got unexpected value of wsp->python_enabled: %d", (int)wsp->python_enabled);
+        return or_fail;
     }
 
 #ifdef __linux__
@@ -390,9 +413,9 @@ operation_result_t collect_one_sample(workspace_t* wsp, context_ptr_t ctx, timeu
 
     sample_msg->head.size = sizeof(ipc_message_sample_t)
             + sizeof(uint64_t) * sample_msg->body.stack_size;
-    if (sample_msg->body.stack_size < 3)
+    if (sample_msg->body.stack_size < 4)
     {
-        PYSAMPROF_LOG(PL_WARNING, "Callstack for tid %ld has depth=%d which is lower than 3, "
+        PYSAMPROF_LOG(PL_WARNING, "Callstack for tid %ld has depth=%d which is lower than 4, "
                 "discarding it as invalid", wsp->tid, (int)(sample_msg->body.stack_size));
         DISCARD_SAMPLE_MESSAGE;
         return or_okay;
@@ -1240,13 +1263,29 @@ static PyObject* pysamprof_request_server_pid(PyObject* self, PyObject* args)
 }
 
 static PyMethodDef module_methods[] = {
-//    {"listthreads", pysamprof_listthreads, METH_NOARGS, NULL},
         {"start", pysamprof_start, METH_VARARGS, start_docstring },
         {"pause_current", pysamprof_pause_current, METH_NOARGS, pause_current_docstring},
-        {"resume_current", pysamprof_resume_current, METH_NOARGS, pause_current_docstring},
+        {"resume_current", pysamprof_resume_current, METH_NOARGS, resume_current_docstring},
         {"request_server_pid", pysamprof_request_server_pid, METH_VARARGS, request_server_pid_docstring},
-        {NULL, NULL, 0, NULL} 
+        {NULL, NULL, 0, NULL}
 };
+
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef module_def = {
+    PyModuleDef_HEAD_INIT,
+    "pysamprof",
+    module_docstring,
+    0,
+    module_methods,
+    NULL, // m_slots
+    NULL, // m_traverse
+    NULL, // m_clear
+    NULL  // m_free
+};
+#define INIT_ERROR NULL
+#else
+#define INIT_ERROR
+#endif
 
 #ifdef __linux__
 static void before_fork_mark_sampling_unsafe()
@@ -1413,7 +1452,7 @@ void before_exec()
 
     int has_gil = 0;
     workspace_t* wsp = get_thread_wsp();
-    if (wsp != NULL && wsp->tstate != NULL && wsp->tstate == _PyThreadState_Current) has_gil = 1;
+    if (wsp != NULL && wsp->tstate != NULL && wsp->tstate == GET_CURRENT_PYSTATE) has_gil = 1;
 
     pysamprof_stop_collection(has_gil, cs_stopped);
     PYSAMPROF_LOG(PL_INFO, "Before exec: pysamprof_stop_collection() finished");
@@ -1429,7 +1468,11 @@ void atexit_mark_sampling_unsafe(void)
     mark_thread_sampling_unsafe();
 }
 
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_pysamprof(void)
+#else
 PyMODINIT_FUNC initpysamprof(void)
+#endif
 {
     operation_result_t res = or_okay;
     // TODO: call finalize_logging() somewhere
@@ -1445,33 +1488,33 @@ PyMODINIT_FUNC initpysamprof(void)
     {
         PYSAMPROF_LOG(PL_ERROR, "Cannot register atfork() in main pysamprof routine, error: %d",
                 err);
-        return;
+        return INIT_ERROR;
     }
 #endif
 
     res = init_ipc_innards();
-    CHECK_AND_REPORT_ERROR(res, "Cannot init IPC innards",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot init IPC innards", INIT_ERROR);
 
 #ifdef _WIN32
     if (!SymInitialize(GetCurrentProcess(), NULL, TRUE))
     {
         PYSAMPROF_LOG(PL_ERROR, "Cannot do SymInitialize, error: %ld", GetLastError());
-        return;
+        return INIT_ERROR;
     }
 #endif
 
     res = init_collector_state();
-    CHECK_AND_REPORT_ERROR(res, "Cannot init collector state",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot init collector state", INIT_ERROR);
     res = parse_memory_regions(&s_memory_regions, 0);
-    CHECK_AND_REPORT_ERROR(res, "Cannot parse memory regions",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot parse memory regions", INIT_ERROR);
 
     xed_initialize();
 
     res = init_hang_protection(s_memory_regions);
-    CHECK_AND_REPORT_ERROR(res, "Cannot init hang protection",);
-    
+    CHECK_AND_REPORT_ERROR(res, "Cannot init hang protection", INIT_ERROR);
+
     res = init_workspace_machinery();
-    CHECK_AND_REPORT_ERROR(res, "Cannot init workspace machinery",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot init workspace machinery", INIT_ERROR);
 
 #ifdef __linux__
     err = pthread_atfork(before_fork, after_fork_in_parent, after_fork_in_child);
@@ -1479,7 +1522,7 @@ PyMODINIT_FUNC initpysamprof(void)
     {
         PYSAMPROF_LOG(PL_ERROR, "Cannot register atfork() in main pysamprof routine, error: %d",
                 err);
-        return;
+        return INIT_ERROR;
     }
 #endif
 
@@ -1491,15 +1534,15 @@ PyMODINIT_FUNC initpysamprof(void)
 #else
 #error Unsupported platform
 #endif
-    CHECK_AND_REPORT_ERROR(res, "Cannot start following threads",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot start following threads", INIT_ERROR);
     res = init_callstack_helper(s_memory_regions);
-    CHECK_AND_REPORT_ERROR(res, "Cannot init callstack helper",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot init callstack helper", INIT_ERROR);
 
     res = setup_server_pointer_thread();
-    CHECK_AND_REPORT_ERROR(res, "Cannot setup pointer thread",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot setup pointer thread", INIT_ERROR);
 
     res = get_server_info(&g_server_info);
-    CHECK_AND_REPORT_ERROR(res, "Cannot get server whereabouts",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot get server whereabouts", INIT_ERROR);
     if (g_server_info.pid == 0)
     {
         PYSAMPROF_LOG(PL_INFO, "No server in current session, will spawn one on collection start");
@@ -1512,21 +1555,21 @@ PyMODINIT_FUNC initpysamprof(void)
     if (atexit(pysamprof_stop_collection_atextit) != 0)
     {
         PYSAMPROF_LOG(PL_ERROR, "Cannot register atexit() handler, errno: %d", errno);
-        return;
+        return INIT_ERROR;
     }
 
     res = probe_function(PyImport_Cleanup, PyImport_Cleanup_probe, s_memory_regions,
             (void**)&s_PyImport_Cleanup_original);
-    CHECK_AND_REPORT_ERROR(res, "Cannot probe PyImport_Cleanup",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot probe PyImport_Cleanup", INIT_ERROR);
 
     res = init_module_following(s_memory_regions, on_new_lib);
-    CHECK_AND_REPORT_ERROR(res, "Cannot init module following",);
+    CHECK_AND_REPORT_ERROR(res, "Cannot init module following", INIT_ERROR);
 
 #ifdef __linux__
     res = parse_vdso_table(s_memory_regions, &s_vdso_table);
     if (res != or_cannot_find_image)
     {
-        CHECK_AND_REPORT_ERROR(res, "Cannot parse vDSO table",);
+        CHECK_AND_REPORT_ERROR(res, "Cannot parse vDSO table", INIT_ERROR);
     }
 
 #endif
@@ -1542,22 +1585,22 @@ PyMODINIT_FUNC initpysamprof(void)
         res = grab_collector_handles(NULL, NULL);
 
         res = init_master_handle_client(&master, g_server_info.pid);
-        CHECK_AND_REPORT_ERROR_FREE_HANDLES(res, "Cannot init master handle",);
+        CHECK_AND_REPORT_ERROR_FREE_HANDLES(res, "Cannot init master handle", INIT_ERROR);
         res = set_collector_handles(NULL, master);
-        CHECK_AND_REPORT_ERROR_FREE_HANDLES(res, "Cannot set collector handles in init",);
+        CHECK_AND_REPORT_ERROR_FREE_HANDLES(res, "Cannot set collector handles in init", INIT_ERROR);
 
         res = get_collection_state(master, &state, &period_nano, &signo, &result_path);
-        CHECK_AND_REPORT_ERROR_FREE_HANDLES(res, "Cannot get collection state",);
+        CHECK_AND_REPORT_ERROR_FREE_HANDLES(res, "Cannot get collection state", INIT_ERROR);
         PYSAMPROF_LOG(PL_INFO, "Got collection status: state=%d, period=%lld ns, signo=%d, result='%s'",
                 (int )state, (long long )period_nano, signo, result_path);
         res = release_collector_handles();
-        CHECK_AND_REPORT_ERROR(res, "Cannot release collector handles",);
+        CHECK_AND_REPORT_ERROR(res, "Cannot release collector handles", INIT_ERROR);
         if (state == cs_running || state == cs_paused)
         {
             res = pysamprof_enable_collection(state, result_path,
                 period_nano / 1000000LL /* convert nano to milli */, signo, 0);
             free(result_path);
-            CHECK_AND_REPORT_ERROR(res, "Cannot start collection",);
+            CHECK_AND_REPORT_ERROR(res, "Cannot start collection", INIT_ERROR);
             PYSAMPROF_LOG(PL_INFO, "Started collection as non-first process");
         }
     }
@@ -1565,14 +1608,20 @@ PyMODINIT_FUNC initpysamprof(void)
     if (atexit(atexit_mark_sampling_unsafe) != 0)
     {
         PYSAMPROF_LOG(PL_ERROR, "Cannot register atexit() handler, errno: %d", errno);
-        return;
+        return INIT_ERROR;
     }
 
     {
+#if PY_MAJOR_VERSION >= 3
+        PyObject* m = PyModule_Create(&module_def);
+#else
         PyObject* m = Py_InitModule3("pysamprof", module_methods, module_docstring);
-        if (m == NULL) return;
+#endif
+        if (m == NULL) return INIT_ERROR;
+        PyEval_InitThreads();
+        PYSAMPROF_LOG(PL_INFO, "pysamprof initialized");
+#if PY_MAJOR_VERSION >= 3
+        return m;
+#endif
     }
-    PyEval_InitThreads();
-    PYSAMPROF_LOG(PL_INFO, "pysamprof initialized");
-    /* do more initialization if needed */
 }

@@ -4,8 +4,7 @@ set(TARGET_NAME "pysamprof-common")
 
 project("common")
 
-# Python3 broken now
-find_package(PythonInterp 2.7 REQUIRED EXACT)
+find_package(PythonInterp)
 if (UNIX)
     execute_process(
         COMMAND

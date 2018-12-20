@@ -29,6 +29,12 @@
 #error Unsupported platform
 #endif
 
+#if PY_MAJOR_VERSION >= 3
+#define GET_PYSTR_AS_PCHAR(pystr) PyUnicode_AsUTF8(pystr)
+#else
+#define GET_PYSTR_AS_PCHAR(pystr) PyString_AsString(pystr)
+#endif
+
 
 static volatile uint64_t s_function_id = 1;
 operation_result_t make_function_info(Perftools__Symbols__FunctionInfo** info)
@@ -122,7 +128,7 @@ operation_result_t send_function_info(thread_handle_t* myself,
 #define GET_CODE_REPORTING(code_reporting, res, retval) \
 {                                                       \
     res = get_code_reporting(&code_reporting);          \
-    CHECK_AND_REPORT_ERROR(res, "Cannot get code reporting from collector", retval);	\
+    CHECK_AND_REPORT_ERROR(res, "Cannot get code reporting from collector", retval); \
 }
 
 static operation_result_t add_code_object_to_reported(PyCodeObject* code)
@@ -219,7 +225,11 @@ static void report_code_object(ring_buffer_element_t element)
 
     if (code->co_code != NULL)
     {
+#if PY_MAJOR_VERSION >= 3
+        Py_ssize_t size = PyBytes_Size(code->co_code);
+#else
         Py_ssize_t size = PyString_Size(code->co_code);
+#endif
         if (size >= 0 && size <= ((uint32_t)-1))
         {
             res = add_code_region_function_info(info, (uint64_t)(code->co_code),
@@ -230,7 +240,7 @@ static void report_code_object(ring_buffer_element_t element)
 
     if (code->co_filename != NULL)
     {
-        char* filename = PyString_AsString(code->co_filename);
+        const char* filename = GET_PYSTR_AS_PCHAR(code->co_filename);
         if (filename != NULL)
         {
             res = add_source_file_name_function_info(info, filename);
@@ -243,7 +253,11 @@ static void report_code_object(ring_buffer_element_t element)
 
     if (code->co_name != NULL)
     {
-        char* name = PyString_AsString(code->co_name);
+#if PY_MAJOR_VERSION >= 3
+        const char* name = PyUnicode_AsUTF8(code->co_name);
+#else
+        const char* name = PyString_AsString(code->co_name);
+#endif
         if (name != NULL)
         {
             res = add_function_name_function_info(info, name);
@@ -353,7 +367,7 @@ static DWORD WINAPI symbol_gather_routine(void* data)
             if (state->state == crts_stop_requested) break;
 
             PYSAMPROF_LOG(PL_INFO, "Got code object %p: '%s'", code,
-                    PyString_AsString(code->co_name));
+                    GET_PYSTR_AS_PCHAR(code->co_name));
             report_code_object(element);
 
             Py_DECREF((PyObject* )(element.data));

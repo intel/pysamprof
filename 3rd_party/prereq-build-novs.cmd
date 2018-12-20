@@ -3,8 +3,6 @@ set ORIG_DIR=%cd%
 pushd %~dp0
 setlocal
 
-call "C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\vcvarsall.bat" amd64
-
 pushd ..
 set TARGET_DIR=%CD%\build
 mkdir %TARGET_DIR%
@@ -12,7 +10,7 @@ popd
 
 :xed
 pushd .\intel-xed
-python mfile.py --msvs-version=9 --install-dir="%TARGET_DIR%\xedkit" install && echo "XED built successfully"
+python mfile.py --msvs-version=%1 --install-dir="%TARGET_DIR%\xedkit" install && echo "XED built successfully"
 popd
 
 :protobuf
