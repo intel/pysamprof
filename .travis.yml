@@ -4,6 +4,12 @@ os:
 
 dist:
   - xenial
+  - trusty
+
+
+env:
+  - PYTHON_VERSION=python2.7
+  - PYTHON_VERSION=python3.6
 
 
 sudo:
@@ -19,7 +25,7 @@ before_install:
 before_script:
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
-  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE=path/to/python
+  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE=$(which $PYTHON_VERSION)
   - make
 
 
