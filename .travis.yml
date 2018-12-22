@@ -1,19 +1,22 @@
-os:
-  - linux
+os: linux
 
 
-dist:
-  - xenial
-  - trusty
+language: python
 
 
-env:
-  - PYTHON_VERSION=python2.7
-  - PYTHON_VERSION=python3.6
+matrix:
+    include:
+        - dist: xenial
+          python: 2.7
+        - dist: xenial
+          python: 3.6
+        - dist: trusty
+          python: 2.7
+        - dist: trusty
+          python: 3.6
 
 
-sudo:
-  - required
+sudo: required
 
 
 before_install:
@@ -25,7 +28,7 @@ before_install:
 before_script:
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
-  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE=$(which $PYTHON_VERSION)
+  - cmake -DCMAKE_BUILD_TYPE=Release ..
   - make
 
 
