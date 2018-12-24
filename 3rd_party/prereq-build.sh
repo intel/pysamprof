@@ -28,7 +28,6 @@ echo "Building protobuf"
     make install
     cd "./python"
     python setup.py build
-    sudo python setup.py install
     echo "Building protobuf succeeded"
 
 echo "Building protobuf-c"
