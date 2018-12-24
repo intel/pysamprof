@@ -1,33 +1,27 @@
 os: linux
 
+dist: xenial
 
-language: python
+language: c
 
 
 matrix:
     include:
-        - dist: xenial
-          python: 2.7
-        - dist: xenial
-          python: 3.6
-        - dist: trusty
-          python: 2.7
-        - dist: trusty
-          python: 3.6
-
+        - env: PYTHON="python2.7"
+        - env: PYTHON="python3.6"
 
 sudo: required
 
 
 before_install:
-  - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake python-pip build-essential
+  - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake python-pip
   - pip install setuptools
 
 
 before_script:
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
-  - cmake -DCMAKE_BUILD_TYPE=Release ..
+  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE= which $PYTHON
   - make
 
 
