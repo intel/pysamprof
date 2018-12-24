@@ -1,4 +1,4 @@
-# Sampling Profiler for Python
+# Sampling Profiler for Python   [![Build Status](https://travis-ci.org/intel-go/pysamprof.svg?branch=master)](https://travis-ci.org/intel-go/pysamprof)
 
 This tool allows to gather statistical profile of CPU usage of mixed native-Python code.
 Currently supported platforms are Windows and Linux, x86_64 only.
