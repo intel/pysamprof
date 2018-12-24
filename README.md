@@ -7,6 +7,7 @@ Currently supported platforms are Windows and Linux, x86_64 only.
 
 ### Required for Linux:
 * `python-dev` package
+* `setuptools` python package
 * `autoconf` tool
 * `libtool`
 * `make` tool
