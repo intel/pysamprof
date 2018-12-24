@@ -3,6 +3,8 @@
 This tool allows to gather statistical profile of CPU usage of mixed native-Python code.
 Currently supported platforms are Windows and Linux, x86_64 only.
 
+[Quick usage guide for Ubuntu 18.04](https://github.com/intel-go/pysamprof/wiki/Example-of-trace-display-on-Ubuntu-18.04).
+
 ### Required for Linux:
 * `python-dev` package
 * `autoconf` tool
