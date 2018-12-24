@@ -21,7 +21,8 @@ before_install:
 before_script:
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
-  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE= which $PYTHON
+  - PYTHON_PATH = which $PYTHON
+  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE= $PYTHON_PATH
   - make
 
 
