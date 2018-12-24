@@ -7,16 +7,13 @@ language: c
 
 matrix:
     include:
-        - env: PYTHON="python3.6"
-        - env: PYTHON="python2.7"
+        - env: PYTHON_PATH= which python3.6
+        - env: PYTHON_PATH= which python2.7
 
 sudo: required
 
 
 before_install:
-  - sudo add-apt-repository -y ppa:jonathonf/python-3.6
-  - sudo apt-get update -y
-  - sudo apt-get install -y $PYTHON
   - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake
 
 
@@ -24,7 +21,7 @@ before_script:
   - python --version
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
-  - cmake -DCMAKE_BUILD_TYPE=Release ..
+  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE= $PYTHON_PATH
   - make
 
 
