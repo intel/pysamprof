@@ -7,17 +7,17 @@ language: c
 
 matrix:
     include:
-        - env: PYTHON="python2.7"
         - env: PYTHON="python3.6"
+        - env: PYTHON="python2.7"
 
 sudo: required
 
 
 before_install:
-  - sudo apt update
-  - sudo apt-get install $PYTHON
-  - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake python-pip
-  - pip install setuptools
+  - sudo add-apt-repository ppa:jonathonf/python-3.6
+  - sudo apt-get update
+  - sudo apt-get install -y $PYTHON
+  - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake
 
 
 before_script:
