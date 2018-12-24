@@ -7,8 +7,8 @@ language: c
 
 matrix:
     include:
-        - env: PYTHON_PATH= which python3.6
-        - env: PYTHON_PATH= which python2.7
+        - env: PYTHON_PATH=$(which python3.6)
+        - env: PYTHON_PATH=$(which python2.7)
 
 sudo: required
 
@@ -21,7 +21,7 @@ before_script:
   - python --version
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
-  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE= $PYTHON_PATH
+  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE=$PYTHON_PATH
   - make
 
 
