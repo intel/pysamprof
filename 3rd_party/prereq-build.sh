@@ -26,6 +26,8 @@ echo "Building protobuf"
     CFLAGS="`${PYTHON_CONFIG} --cflags` -fPIC" LDFLAGS="`${PYTHON_CONFIG} --ldflags`" ./configure "--prefix=$TARGET/protobufkit"
     make
     make install
+    cd "./python"
+    python setup.py build
     echo "Building protobuf succeeded"
 
 echo "Building protobuf-c"
