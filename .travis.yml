@@ -2,30 +2,24 @@ os: linux
 
 dist: xenial
 
-language: c
+language: python
 
-
-matrix:
-    include:
-        - env: PYTHON="python3.6"
-        - env: PYTHON="python2.7"
+python:
+  - "2.7"
+  - "3.6"
 
 sudo: required
 
-
 before_install:
-  - if [[ $PYTHON = "python3.6" ]]; then sudo add-apt-repository -y ppa:jonathonf/python-3.6; sudo apt-get update -y; sudo apt-get install -y python3.6; fi
-  - PYTHON_PATH=$(which $PYTHON)
-  - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake
-
+  - sudo apt-get install -y autoconf libtool make unzip g++ pkg-config cmake
 
 before_script:
   - python --version
+  - if [[ $TRAVIS_PYTHON_VERSION = "3.6" ]]; then sudo ln -fs python3.6-config $(which python-config); fi
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
-  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE=$PYTHON_PATH
+  - cmake -DCMAKE_BUILD_TYPE=Release ..
   - make
-
 
 script:
   - mkdir ~/result && cp pysamprof.so ~/result/ && cp trace_writer/pysamprof-server ~/result/
