@@ -164,7 +164,7 @@ if sys.platform == 'win32':
                 except ValueError:
                     print('Warning: cannot parse ordinal and hint in <%s>' % line)
                     continue
-                if rest.startswith(b'    '):
+                if rest.startswith('    '):
                     # no rva
                     rva = None
                     name = rest.split()[0]
@@ -227,7 +227,7 @@ if sys.platform == 'win32':
             for finfo in mapped:
                 joint[(finfo.offset, finfo.name)] = finfo
 
-            result = joint.values()
+            result = list(joint.values())
             result = define_size_export_functions(result, sections)
             return result
 
