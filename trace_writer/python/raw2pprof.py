@@ -13,7 +13,7 @@ import sample_t_pb2 as pb_sample
 import functionInfo_pb2 as pb_funcs
 
 # message_type_t enum members from proto_message_types.h
-TYPE_UNDERFINEDF, TYPE_SAMPLE, TYPE_FUNCTION_INFO, TYPE_MAPPING = [struct.unpack('>i', tag)[0] for tag in 'UNDF SMPL FNCI MAPP'.split()]
+TYPE_UNDERFINEDF, TYPE_SAMPLE, TYPE_FUNCTION_INFO, TYPE_MAPPING = [struct.unpack('>i', tag)[0] for tag in b'UNDF SMPL FNCI MAPP'.split()]
 '''
     to avoid inserting "tid" and "timestamp" labels
     into string table, "tid" is always placed
@@ -69,13 +69,13 @@ if sys.platform == 'win32':
         def parse_bitness_info(output):
             line_iter = iter(output.splitlines())
             for line in line_iter:
-                if line.startswith('FILE HEADER VALUES'):
+                if line.startswith(b'FILE HEADER VALUES'):
                     break
             else:
                 raise ValueError('Missing header info')
             for line in line_iter:
-                if 'machine' in line:
-                    bitness = 64 if '64' in line else 32
+                if b'machine' in line:
+                    bitness = 64 if b'64' in line else 32
                     break
             else:
                 raise ValueError('Missing bitness info')
@@ -84,12 +84,12 @@ if sys.platform == 'win32':
         def parse_baseaddr_info(output):
             line_iter = iter(output.splitlines())
             for line in line_iter:
-                if line.startswith('OPTIONAL HEADER VALUES'):
+                if line.startswith(b'OPTIONAL HEADER VALUES'):
                     break
             else:
                 raise ValueError('Missing header info')
             for line in line_iter:
-                if 'image base' in line:
+                if b'image base' in line:
                     base_addr = int(line.strip().split()[0].strip(), 16)
                     break
             else:
@@ -104,25 +104,25 @@ if sys.platform == 'win32':
                     if header_found and section_size is not None and section_addr is not None and section_id is not None:
                         result.append((section_id, section_addr, section_size, is_exec))
                     section_id, section_size, section_addr, header_found, is_exec = None, None, None, False, False
-                if line.startswith('SECTION HEADER'):
+                if line.startswith(b'SECTION HEADER'):
                     try:
-                        section_id = int(re.findall(r'(\d+)', line)[0])
+                        section_id = int(re.findall(r'(\d+)', line.decode('utf-8'))[0])
                     except (IndexError, ValueError):
                         print('Warning: cannot parse section header line <%s>' % line)
                         continue
                     header_found = True
                 elif header_found:
-                    if 'virtual size' in line:
+                    if b'virtual size' in line:
                         try:
                             section_size = int(line.strip().split()[0], 16)
                         except ValueError:
                             raise ValueError('Bad section: cannot parse size')
-                    elif 'virtual address' in line:
+                    elif b'virtual address' in line:
                         try:
                             section_addr = int(line.strip().split()[0], 16)
                         except ValueError:
                             raise ValueError('Bad section: cannot parse address')
-                    elif 'Execute' in line and 'Read' in line:
+                    elif b'Execute' in line and b'Read' in line:
                         # previous section was "Execute Read"
                         is_exec = True
 
@@ -131,15 +131,15 @@ if sys.platform == 'win32':
         def parse_export_functions(output):
             line_iter = iter(output.splitlines())
             for line in line_iter:
-                if 'Section contains the following exports for' in line:
+                if b'Section contains the following exports for' in line:
                     break
             else:
                 raise ValueError('Can not find export section')
             function_count = None
             for line in line_iter:
-                if 'number of names' in line:
+                if b'number of names' in line:
                     try:
-                        function_count = int(re.findall(r'(\d+)', line)[0])
+                        function_count = int(re.findall(r'(\d+)', line.decode('utf-8'))[0])
                     except (ValueError, TypeError, AttributeError):
                         raise ValueError('Can not parse number of functions')
                     break
@@ -147,7 +147,7 @@ if sys.platform == 'win32':
                 raise ValueError('Can not find number of functions')
 
             for line in line_iter:
-                if 'ordinal' in line and 'hint' in line and 'RVA' in line and 'name' in line:
+                if b'ordinal' in line and b'hint' in line and b'RVA' in line and b'name' in line:
                     break
             else:
                 raise ValueError('Missing exports header')
@@ -159,7 +159,7 @@ if sys.platform == 'win32':
                 if not line.strip():
                     continue
                 try:
-                    ordinal, hint, rest = re.match(r'(\d+)\s*([0-9a-fA-F]+)(.*)', line.strip()).groups()
+                    ordinal, hint, rest = re.match(r'(\d+)\s*([0-9a-fA-F]+)(.*)', line.decode('utf-8').strip()).groups()
                     ordinal, hint = int(ordinal), int(hint, 16)
                 except ValueError:
                     print('Warning: cannot parse ordinal and hint in <%s>' % line)
@@ -185,7 +185,7 @@ if sys.platform == 'win32':
             exec_sections = frozenset(section_id for (section_id, section_addr, section_size, is_exec) in sections if is_exec)
             line_iter = iter(output.splitlines())
             for line in line_iter:
-                if 'Address' in line and 'RVA' in line and 'Size' in line:
+                if b'Address' in line and b'RVA' in line and b'Size' in line:
                     try:
                         next_line = next(line_iter)
                     except StopIteration:
@@ -200,7 +200,7 @@ if sys.platform == 'win32':
             result = []
             for line in line_iter:
                 try:
-                    section_id, rva, size, rest = re.match(r'\s*(\d+):[0-9a-fA-F]+\s*([0-9a-fA-F]+)\s*[0-9a-fA-F]+\s*(\d+)\s*(.*)', line).groups()
+                    section_id, rva, size, rest = re.match(r'\s*(\d+):[0-9a-fA-F]+\s*([0-9a-fA-F]+)\s*[0-9a-fA-F]+\s*(\d+)\s*(.*)', line.decode('utf-8')).groups()
                 except AttributeError:
                     break
                 if int(section_id) not in exec_sections:
@@ -227,7 +227,7 @@ if sys.platform == 'win32':
             for finfo in mapped:
                 joint[(finfo.offset, finfo.name)] = finfo
 
-            result = joint.values()
+            result = list(joint.values())
             result = define_size_export_functions(result, sections)
             return result
 
@@ -249,8 +249,8 @@ else:
         def parse_bitness_info(output):
             line_iter = iter(output.splitlines())
             for line in line_iter:
-                if line.startswith('architecture'):
-                    bitness = 64 if '64' in line else 32
+                if line.startswith(b'architecture'):
+                    bitness = 64 if b'64' in line else 32
                     break
             else:
                 raise ValueError('Missing bitness info')
@@ -260,7 +260,7 @@ else:
             line_iter = iter(output.splitlines())
             base_addr_found = False
             for line in line_iter:
-                if 'Idx' in line:
+                if b'Idx' in line:
                     base_addr_found = True
                     continue
                 if base_addr_found:
@@ -277,10 +277,10 @@ else:
             base_addr = parse_baseaddr_info(output)
             sections_found = False
             for line in output.splitlines():
-                if 'Idx' in line:
+                if b'Idx' in line:
                     sections_found = True
                     continue
-                if 'SYMBOL TABLE' in line:
+                if b'SYMBOL TABLE' in line:
                     break
                 if sections_found:
                     if line.strip() and line.split()[0].isdigit():
@@ -294,7 +294,7 @@ else:
                             continue
                         header_found = True
                     elif header_found:
-                        if 'CODE' in line:
+                        if b'CODE' in line:
                             is_exec = True
                         result.append((section_id, section_addr, section_size, is_exec))
                         section_id, section_size, section_addr, header_found, is_exec = None, None, None, False, False
@@ -305,7 +305,7 @@ else:
             base_addr = parse_baseaddr_info(output)
             line_iter = iter(output.splitlines())
             for line in line_iter:
-                if 'SYMBOL TABLE' in line:
+                if b'SYMBOL TABLE' in line:
                     break
             else:
                 raise ValueError('Can not find export section')
@@ -315,7 +315,7 @@ else:
                 if not line.strip():
                     continue
                 try:
-                    vma, flags, rest = re.match(r'([0-9a-fA-F]+)\s(.{7,7})\s(.*)', line.strip()).groups()
+                    vma, flags, rest = re.match(r'([0-9a-fA-F]+)\s(.{7,7})\s(.*)', line.decode('utf-8').strip()).groups()
                     #7 - 7 bytes for flags
                     vma = int(vma, 16)
                     if vma == 0:
@@ -346,7 +346,7 @@ else:
                  output = subprocess.check_output(["objdump", "-fhtT", binary_path],
                                                  env=env, stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError as err:
-                 raise ValueError("Cannot parse '%s': %s" % (binary_path, err.output))
+                 raise ValueError("Cannot parse '%s': %s" % (binary_path, err.output.decode('utf-8')))
             return NativeBinaryInfo(base_addr=parse_baseaddr_info(output),
                                     bitness=parse_bitness_info(output), functions=parse_functions(output))
         return call_parser
@@ -369,7 +369,7 @@ def parse_native_symbols(mapping, funcs_info):
 
         region = pb_funcs.CodeRegion()
         region.startAddr = mapping.Start + finfo.offset
-        region.buffer = '\xCC' * finfo.size
+        region.buffer = b'\xCC' * finfo.size
         function.codeInfo.codeRegions.extend([region])
 
         funcs_info[region.startAddr] = function

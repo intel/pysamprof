@@ -25,6 +25,11 @@ nmake
 nmake install
 popd
 
+set PROTOC=%TARGET_DIR%\protobuf-kit-debug\bin\protoc.exe
+pushd ..\python
+python setup.py build
+popd
+
 rem Now build protobuf release
 mkdir %TARGET_DIR%\protobuf-kit-release
 mkdir build\release
