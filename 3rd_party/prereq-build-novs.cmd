@@ -25,7 +25,7 @@ nmake
 nmake install
 popd
 
-set PROTOC=..\..\..\build\protobuf-kit-debug\bin\protoc.exe
+set PROTOC=%TARGET_DIR%\protobuf-kit-debug\bin\protoc.exe
 pushd ..\python
 python setup.py build
 popd
