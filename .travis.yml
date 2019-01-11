@@ -2,7 +2,7 @@ os: linux
 
 dist: xenial
 
-language: python
+language: c
 
 python:
   - "2.7"
@@ -15,7 +15,8 @@ before_install:
 
 before_script:
   - python --version
-  - if [[ $TRAVIS_PYTHON_VERSION = "3.6" ]]; then sudo ln -fs python3.6-config $(which python-config); fi
+  - sudo ls /usr/lib/x86_64-linux-gnu/libpy*
+  - sudo ln -fs "python$TRAVIS_PYTHON_VERSION-config" "$(which python-config)"
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
   - cmake -DCMAKE_BUILD_TYPE=Release ..
