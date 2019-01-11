@@ -2,7 +2,7 @@ os: linux
 
 dist: xenial
 
-language: c
+language: python #this string allows to test 2 versions of python, unlike language: c
 
 python:
   - "2.7"
@@ -15,7 +15,6 @@ before_install:
 
 before_script:
   - python --version
-  - sudo ls /usr/lib/x86_64-linux-gnu/libpy*
   - sudo ln -fs "python$TRAVIS_PYTHON_VERSION-config" "$(which python-config)"
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
