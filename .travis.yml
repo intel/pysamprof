@@ -17,7 +17,7 @@ before_install:
 
 before_script:
   - python --version
-  - PATH_TO_LIBPYTHON=$(ls "/usr/lib/x86_64-linux-gnu/libpython$TRAVIS_PYTHON_VERSION*.so")
+  - PATH_TO_LIBPYTHON=$(sudo ls "/usr/lib/x86_64-linux-gnu/libpython$TRAVIS_PYTHON_VERSION*.so")
   - sudo ln -fs "python$TRAVIS_PYTHON_VERSION-config" "$(which python-config)"
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
