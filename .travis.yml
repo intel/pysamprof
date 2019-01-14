@@ -2,30 +2,27 @@ os: linux
 
 dist: xenial
 
-language: c
+language: python #this string allows to test 2 versions of python, unlike language: c
 
-
-matrix:
-    include:
-        - env: PYTHON="python3.6"
-        - env: PYTHON="python2.7"
+python:
+  - "2.7"
+  - "3.6"
 
 sudo: required
 
-
 before_install:
-  - if [[ $PYTHON = "python3.6" ]]; then sudo add-apt-repository -y ppa:jonathonf/python-3.6; sudo apt-get update -y; sudo apt-get install -y python3.6; fi
-  - PYTHON_PATH=$(which $PYTHON)
-  - sudo apt-get install -y python-dev autoconf libtool make unzip g++ pkg-config cmake
-
+  - if [[ $TRAVIS_PYTHON_VERSION = "3.6" ]]; then sudo add-apt-repository -y ppa:jonathonf/python-3.6; sudo apt-get update -y; sudo apt-get install -y python3.6-dev; fi
+  - if [[ $TRAVIS_PYTHON_VERSION = "2.7" ]]; then sudo apt-get install -y python2.7-dev; fi
+  - sudo apt-get install -y autoconf libtool make unzip g++ pkg-config cmake
 
 before_script:
   - python --version
+  - PATH_TO_LIBPYTHON=$(ls /usr/lib/x86_64-linux-gnu/libpython$TRAVIS_PYTHON_VERSION*.so)
+  - sudo ln -fs "python$TRAVIS_PYTHON_VERSION-config" "$(which python-config)"
   - cd 3rd_party && ./prereq-build.sh && cd ..
   - mkdir pyext/build && cd pyext/build
-  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_EXECUTABLE=$PYTHON_PATH
+  - cmake -DCMAKE_BUILD_TYPE=Release .. -DPYTHON_LIBRARIES=$PATH_TO_LIBPYTHON
   - make
-
 
 script:
   - mkdir ~/result && cp pysamprof.so ~/result/ && cp trace_writer/pysamprof-server ~/result/
