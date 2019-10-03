@@ -28,7 +28,7 @@ Currently supported platforms are Windows and Linux, x86_64 only.
   * `git submodule update --init --recursive`
   * `cd 3rd_party && ./prereq-build.sh && cd ..`
 * On Windows:
-  * Update third-party intel-xed, mbuild, protobuf, protobuf-c and safestringlib submodules (3rd_party folder):
+  * Update third-party intel-xed, mbuild, protobuf, protobuf-c and safestringlib submodules (`3rd_party` folder):
       * `git submodule update --init -- .\3rd_party\intel-xed`
       * `git submodule update --init -- .\3rd_party\mbuild`
       * `git submodule update --init -- .\3rd_party\protobuf`
