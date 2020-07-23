@@ -145,9 +145,9 @@ operation_result_t collect_one_sample(workspace_t* wsp, context_ptr_t ctx, timeu
              FIXME: place probes on unsafe functions so as to NOT try to
              get current thread's state when it's unsafe. */
             PyInterpreterState* interp = PyInterpreterState_Head();
-            for (; interp != NULL && wsp->python_enabled != pes_is_python; interp = interp->next)
+            for (; interp != NULL && wsp->python_enabled != pes_is_python; interp = PyInterpreterState_Next(interp))
             {
-                PyThreadState* tstate = interp->tstate_head;
+                PyThreadState* tstate = PyInterpreterState_ThreadHead(interp);
                 for (; tstate != NULL; tstate = tstate->next)
                 {
                     if (tstate->thread_id == wsp->python_tid)
