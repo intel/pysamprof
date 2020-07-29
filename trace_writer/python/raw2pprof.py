@@ -12,6 +12,8 @@ import profile_pb2 as pb_profile
 import sample_t_pb2 as pb_sample
 import functionInfo_pb2 as pb_funcs
 
+from google.protobuf import message as message_mod
+
 # message_type_t enum members from proto_message_types.h
 TYPE_UNDERFINEDF, TYPE_SAMPLE, TYPE_FUNCTION_INFO, TYPE_MAPPING = [struct.unpack('>i', tag)[0] for tag in b'UNDF SMPL FNCI MAPP'.split()]
 '''
@@ -418,7 +420,11 @@ def symbolize(profile_in, input_symbols, resolve_native):
         offset += struct.calcsize('iI')
         if message_type == TYPE_FUNCTION_INFO:
             function = pb_funcs.FunctionInfo()
-            function.ParseFromString(symbol_info_raw[offset : offset + message_len])
+            try:
+                function.ParseFromString(symbol_info_raw[offset : offset + message_len])
+            except message_mod.DecodeError as e:
+                print("EXCEPTION in symbolize:", e)
+                break
             funcs_info[function.codeInfo.codeRegions[0].startAddr] = function
         elif message_type == TYPE_MAPPING:
             mapping = pb_funcs.Mapping()
@@ -640,7 +646,11 @@ def convert(input_file_name):
         offset += struct.calcsize('iI')
         if message_type == TYPE_SAMPLE:
             sample = pb_sample.sample_t()
-            sample.ParseFromString(data[offset: offset + message_len])
+            try:
+                sample.ParseFromString(data[offset: offset + message_len])
+            except message_mod.DecodeError as e:
+                print("EXCEPTION in convert:", e)
+                break
             add_sample(profile, sample, seen_locations)
         else:
             #pylint: disable=superfluous-parens
