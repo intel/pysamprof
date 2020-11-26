@@ -33,6 +33,8 @@ file (GLOB SRC
 add_library(${TARGET_NAME} ${SRC})
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_options(${TARGET_NAME} PUBLIC ${PYTHON_CFLAGS})
+
+string(STRIP ${PYTHON_LDFLAGS} PYTHON_LDFLAGS)
 target_link_libraries(${TARGET_NAME} PUBLIC ${PYTHON_LDFLAGS})
 
 if (NOT WIN32)
