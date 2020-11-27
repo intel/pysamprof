@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-PYTHON_CONFIG=${1:-`which python-config`}
+PYTHON_CONFIG=${1:-`which python3-config`}
 cd "`dirname $0`"
 SOURCE="`pwd`"
 TARGET="`pwd`/../build"
@@ -27,7 +27,7 @@ echo "Building protobuf"
     make
     make install
     cd "./python"
-    python setup.py build
+    python3 setup.py build
     echo "Building protobuf succeeded"
 
 echo "Building protobuf-c"
