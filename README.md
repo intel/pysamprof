@@ -1,3 +1,14 @@
+PROJECT NOT UNDER ACTIVE MANAGEMENT
+
+This project will no longer be maintained by Intel.
+
+Intel has ceased development and contributions including, but not limited to, maintenance, bug fixes, new releases, or updates, to this project.  
+
+Intel no longer accepts patches to this project.
+
+If you have an ongoing need to use this project, are interested in independently developing it, or would like to maintain patches for the open source software community, please create your own fork of this project.  
+
+Contact: webadmin@linux.intel.com
 # Sampling Profiler for Python   [![Build Status](https://travis-ci.org/intel-go/pysamprof.svg?branch=master)](https://travis-ci.org/intel-go/pysamprof)
 
 This tool allows to gather statistical profile of CPU usage of mixed native-Python code.
