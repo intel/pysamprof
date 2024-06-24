@@ -18,6 +18,7 @@ Currently supported platforms are Windows and Linux, x86_64 only.
 
 ### Required for Linux:
 * `python-dev` package
+* `lzma-dev` package
 * `setuptools` python package
 * `autoconf` tool
 * `libtool`
@@ -26,6 +27,7 @@ Currently supported platforms are Windows and Linux, x86_64 only.
 * `g++` compiler
 * `pkg-config` tool
 * `cmake` tool
+* `python-config` symlinked to the `python3-config`
 
 ### Required for Windows:
 * `python` installed
